@@ -3,24 +3,37 @@ pragma solidity ^0.8.18;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
+/**
+ * @title Exchange
+ * @dev A contract for an exchange that allows users to add and remove liquidity, as well as swap tokens with ETH.
+ * This contract inherits from the ERC20 standard.
+ */
 contract Exchange is ERC20 {
     address public tokenAddress;
-    // Exchange is inheriting ERC20, because our exchange itself is an ERC-20 contract
-    // as it is responsible for minting and issuing LP Tokens
+
+    /**
+     * @dev Constructor function to initialize the Exchange contract.
+     * @param token The address of the token to be used in the exchange.
+     */
     constructor(address token) ERC20("ETH TOKEN LP Token", "lpETHTOKEN") {
         require(token != address(0), "Token address passed is a null address");
         tokenAddress = token;
     }
 
-    // getReserve returns the balance of `token` held by `this` contract
+    /**
+     * @dev Get the balance of the token held by this contract.
+     * @return The balance of the token held by this contract.
+     */
     function getReserve() public view returns (uint256) {
         return ERC20(tokenAddress).balanceOf(address(this));
     }
 
-    // addLiquidity allows users to add liquidity to the exchange
-    function addLiquidity(
-        uint256 amountOfToken
-    ) public payable returns (uint256) {
+    /**
+     * @dev Allows users to add liquidity to the exchange.
+     * @param amountOfToken The amount of tokens the user wants to add.
+     * @return The amount of LP tokens minted for the user.
+     */
+    function addLiquidity(uint256 amountOfToken) public payable returns (uint256) {
         uint256 lpTokensToMint;
         uint256 ethReserveBalance = address(this).balance;
         uint256 tokenReserveBalance = getReserve();
@@ -65,10 +78,12 @@ contract Exchange is ERC20 {
         return lpTokensToMint;
     }
 
-    // removeLiquidity allows users to remove liquidity from the exchange
-    function removeLiquidity(
-        uint256 amountOfLPTokens
-    ) public returns (uint256, uint256) {
+    /**
+     * @dev Allows users to remove liquidity from the exchange.
+     * @param amountOfLPTokens The amount of LP tokens the user wants to remove.
+     * @return The amount of ETH and tokens returned to the user.
+     */
+    function removeLiquidity(uint256 amountOfLPTokens) public returns (uint256, uint256) {
         // Check that the user wants to remove >0 LP tokens
         require(
             amountOfLPTokens > 0,
@@ -92,12 +107,16 @@ contract Exchange is ERC20 {
         return (ethToReturn, tokenToReturn);
     }
 
-    // getOutputAmountFromSwap calculates the amount of output tokens to be received based on xy = (x + dx)(y - dy)
-    function getOutputAmountFromSwap(
-        uint256 inputAmount,
-        uint256 inputReserve,
-        uint256 outputReserve
-    ) public pure returns (uint256) {
+    /**
+     * @dev Calculates the amount of output tokens to be received based on a swap.
+     * @param inputAmount The amount of input tokens.
+     * @param inputReserve The input token reserve.
+     * @param outputReserve The output token reserve.
+     * @return The amount of output tokens to be received.
+     */
+    function getOutputAmountFromSwap(uint256 inputAmount, uint256 inputReserve, uint256 outputReserve)
+        public pure returns (uint256)
+    {
         require(
             inputReserve > 0 && outputReserve > 0,
             "Reserves must be greater than 0"
@@ -111,7 +130,10 @@ contract Exchange is ERC20 {
         return numerator / denominator;
     }
 
-    // ethToTokenSwap allows users to swap ETH for tokens
+    /**
+     * @dev Allows users to swap ETH for tokens.
+     * @param minTokensToReceive The minimum amount of tokens the user expects to receive.
+     */
     function ethToTokenSwap(uint256 minTokensToReceive) public payable {
         uint256 tokenReserveBalance = getReserve();
         uint256 tokensToReceive = getOutputAmountFromSwap(
@@ -128,11 +150,12 @@ contract Exchange is ERC20 {
         ERC20(tokenAddress).transfer(msg.sender, tokensToReceive);
     }
 
-    // tokenToEthSwap allows users to swap tokens for ETH
-    function tokenToEthSwap(
-        uint256 tokensToSwap,
-        uint256 minEthToReceive
-    ) public {
+    /**
+     * @dev Allows users to swap tokens for ETH.
+     * @param tokensToSwap The amount of tokens to swap.
+     * @param minEthToReceive The minimum amount of ETH the user expects to receive.
+     */
+    function tokenToEthSwap(uint256 tokensToSwap, uint256 minEthToReceive) public {
         uint256 tokenReserveBalance = getReserve();
         uint256 ethToReceive = getOutputAmountFromSwap(
             tokensToSwap,
@@ -153,6 +176,4 @@ contract Exchange is ERC20 {
 
         payable(msg.sender).transfer(ethToReceive);
     }
-
-    
 }
