@@ -25,5 +25,16 @@ describe("Exchange", function (){
         expect(await exchange.name()).to.equal("Token");
         expect(await exchange.symbol()).to.equal("TKN");
     });
+
+    it("should allow user to add liquidity", async function(){
+        const amountOfToken = ethers.utils.parseEther("100");
+
+        await token.connect(user1).approve(exchange.address, amountOfToken);
+        await exchange.connect(user1).addLiquidity(amountOfToken, { value: ethers.utils.parseEther("1") });
+
+        const userLPTokenBalance = await exchange.balanceOf(user1.address);
+        expect(userLPTokenBalance).to.not.equal(0);
+    });
+
     
 })
