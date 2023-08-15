@@ -20,5 +20,10 @@ describe("Exchange", function (){
         await exchange.deploy();
     });
 
+    it("should deploy with correct initializaton state", async function(){
+        expect(await exchange.tokenAddress()).to.equal(token.address);
+        expect(await exchange.name()).to.equal("Token");
+        expect(await exchange.symbol()).to.equal("TKN");
+    });
     
 })
