@@ -11,8 +11,8 @@ describe("Exchange", function (){
     beforeEach(async function(){
         [owner,user1,user2] = await ethers.getSigners();
         
-        const ERC20Token = await ethers.getContractFactory("Token");
-        token = await ERC20Token.deploy("Token", "TKN");
+        const Token = await ethers.getContractFactory("Token");
+        token = await Token.deploy("Token", "TKN");
         await token.deploy();
 
         const Exchange = await ethers.getContractFactory("Exchange");
