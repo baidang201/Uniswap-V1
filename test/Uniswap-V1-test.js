@@ -50,5 +50,23 @@ describe("Exchange", function (){
         const userLPTokenBalanceAfter = await exchange.balanceOf(user1.address);
         expect(userLPTokenBalanceAfter).to.equal(0);
     });
+
+    it("should allow users to swap tokens for ETH", async function () {
+        const amountOfToken = ethers.utils.parseEther("100");
     
-})
+        await token.connect(user1).approve(exchange.address, amountOfToken);
+        await exchange.connect(user1).addLiquidity(amountOfToken, { value: ethers.utils.parseEther("1") });
+    
+        const tokenReserveBefore = await exchange.getReserve();
+        const userEthBalanceBefore = await user2.getBalance();
+    
+        await exchange.connect(user2).tokenToEthSwap(amountOfToken, 0);
+    
+        const tokenReserveAfter = await exchange.getReserve();
+        const userEthBalanceAfter = await user2.getBalance();
+    
+        expect(userEthBalanceAfter).to.be.above(userEthBalanceBefore);
+        expect(tokenReserveAfter).to.be.below(tokenReserveBefore);
+    });
+});
+     
