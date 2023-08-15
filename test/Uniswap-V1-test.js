@@ -36,5 +36,19 @@ describe("Exchange", function (){
         expect(userLPTokenBalance).to.not.equal(0);
     });
 
+    it("should allow users to remove liquidity", async function () {
+        const amountOfToken = ethers.utils.parseEther("100");
+        const ethValue = ethers.utils.parseEther("1");
+    
+        await token.connect(user1).approve(exchange.address, amountOfToken);
+        await exchange.connect(user1).addLiquidity(amountOfToken, { value: ethValue });
+    
+        const userLPTokenBalanceBefore = await exchange.balanceOf(user1.address);
+    
+        await exchange.connect(user1).removeLiquidity(userLPTokenBalanceBefore);
+    
+        const userLPTokenBalanceAfter = await exchange.balanceOf(user1.address);
+        expect(userLPTokenBalanceAfter).to.equal(0);
+    });
     
 })
